@@ -4,7 +4,6 @@
 
 🔗 **Ссылки на ресурсы проекта:**
 * **Организация на GitHub:** [SoftDevbyRVCHK](https://github.com/SoftDevbyRVCHK)
-* **Макеты и первичный дизайн (Figma):** `[ВСТАВИТЬ ССЫЛКУ НА FIGMA-ПРОЕКТ]`
 * **Kanban-доска (GitHub Projects):** `[https://github.com/SoftDevbyRVCHK/backend/tree/develop]`
 
 ---
