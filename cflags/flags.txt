@@ -1,1 +1,1 @@
--std=c++23 -Wall -pedantic -fPIC
+-std=c++23 -Wall -pedantic -fPIC -I "path_to/boost_1_92_0" -lws2_32 -lmswsock
