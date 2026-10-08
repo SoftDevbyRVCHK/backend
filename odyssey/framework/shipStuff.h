@@ -7,11 +7,13 @@ namespace odyssey {
         
         namespace shipStuff {
             
-            /*
-                здесь располагаются каркасы объектов, которые находятся а корабле.
-            */
+            //
+            //  здесь располагаются каркасы объектов, которые находятся а корабле.
+            //
         }
     }
 }
+
+#include "shipStuff/ship.h"
 
 #endif /* ODYSSEY_FRAMEWORK_SPACESHIPSTUFF_H */
