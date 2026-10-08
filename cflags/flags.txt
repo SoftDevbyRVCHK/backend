@@ -1,0 +1,1 @@
+-std=c++23 -Wall -pedantic -fPIC -I "C:/C/libs/boost_1_92_0" -I "C:\C\graphics4\magl\math" -lws2_32 -lmswsock
