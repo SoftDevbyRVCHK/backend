@@ -7,9 +7,9 @@ namespace odyssey {
         
         namespace identity {
             
-            /*
-                пасспорт "разумного".
-            */
+            //
+            //  пасспорт "разумного".
+            //
             
             struct passport {
             
