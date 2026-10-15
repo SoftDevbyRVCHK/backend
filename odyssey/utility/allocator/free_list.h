@@ -24,7 +24,9 @@ namespace odyssey {
                 typename offset_t = std::uint16_t
             >
             struct free_list {
-            
+                
+                #include "free_list/traits.h"
+                
             protected:
             
                 #include "free_list/header_t.h"
@@ -36,7 +38,7 @@ namespace odyssey {
                 };
                 
             public:
-                
+
                 free_list (std::span<std::byte> chunk) 
                     : storage(chunk) {
                     head = reinterpret_cast<fchunk_t*>(
@@ -396,12 +398,6 @@ namespace odyssey {
                     
                     return static_cast<std::byte*>(ptr) - offset;
                 }
-            
-            
-            public:
-            
-                #include "free_list/traits.h"
-            
             };
             
             
