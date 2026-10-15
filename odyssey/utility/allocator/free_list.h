@@ -25,61 +25,17 @@ namespace odyssey {
             >
             struct free_list {
             
-                struct header_t {
-                    
-                    header_t () : _size(0), _flags(0) {}
-                    
-                    void init (void *chunk_start) {
-                        std::memcpy(this, chunk_start, sizeof(header_t));
-                    }
-                    void copy (void *chunk_start) {
-                        std::memcpy(chunk_start, this, sizeof(header_t));
-                    }
-                    std::size_t size () {
-                        return  static_cast<std::size_t>(_size);
-                    }
-                    void size_set (std::size_t newsize) {
-                        _size = static_cast<size_mt>(newsize);
-                    }
-                    
-                    bool cuse () {
-                        return _flags & flags::cuse;
-                    }
-                    void cuse_0 () {
-                        _flags&= (~flags::cuse);
-                    }
-                    void cuse_1 () {
-                        _flags|= flags::cuse;
-                    }
-                    
-                    bool puse () {
-                        return _flags & flags::puse;
-                    }
-                    void puse_0 () {
-                        _flags&= (~flags::puse);
-                    }
-                    void puse_1 () {
-                        _flags|= flags::puse;
-                    }
-                    
-                    struct flags {
-                        
-                        static constexpr flags_t nuse {0};
-                        static constexpr flags_t cuse {1 << 0};
-                        static constexpr flags_t puse {1 << 1};
-                    };
-                    
-                private:
-                    
-                    size_mt _size;
-                    flags_t _flags;
-                };
-
+            protected:
+            
+                #include "free_list/header_t.h"
+                
                 struct fchunk_t {
                     
                     fchunk_t *prev;
                     fchunk_t *next;
                 };
+                
+            public:
                 
                 free_list (std::span<std::byte> chunk) 
                     : storage(chunk) {
@@ -186,30 +142,30 @@ namespace odyssey {
                         
                     fchunk_t *cur;
                     
-                    if (chunk_start > storage.data() && !header.puse()) { // предыдущий свободен
+                    if (chunk_start > storage.data() && !header.puse()) {
                     
                         std::memcpy(&cur, 
-                            chunk_start - sizeof(fchunk_t*),              // получаем заголовок
+                            chunk_start - sizeof(fchunk_t*),
                             sizeof(fchunk_t*)
                         );
 
-                        chunk_start = header_ptr(cur);                    // расширяем
-                        header.init(chunk_start);                         // до текущего
-                        chunk_size+= header.size();                       // чанка
-                        header.size_set(chunk_size);                      //
-                        header.cuse_0();                                  //
-                        header.copy(chunk_start);                         //
+                        chunk_start = header_ptr(cur);
+                        header.init(chunk_start);
+                        chunk_size+= header.size();
+                        header.size_set(chunk_size);                      
+                        header.cuse_0();                                  
+                        header.copy(chunk_start);                         
                                 
                         std::memcpy(
-                            chunk_start + chunk_size - sizeof(fchunk_t*), // подготавливаем футер
+                            chunk_start + chunk_size - sizeof(fchunk_t*), 
                             &cur, 
                             sizeof(fchunk_t*)
                         );
                     }
-                    else {                                                // предыдущий занят
-                        cur =  reinterpret_cast<fchunk_t*> (              // переподготавливаем чанк,
-                            fchunk_prepare(                               // но пока его невозможно включить в список
-                                chunk_start,                              // (в карйнем случае добавляем перед head)
+                    else {                                                
+                        cur =  reinterpret_cast<fchunk_t*> (              
+                            fchunk_prepare(                               
+                                chunk_start,                              
                                 chunk_size
                             )                                               
                         );
@@ -217,50 +173,50 @@ namespace odyssey {
                     }
                     
                     std::byte *next_start = chunk_start + chunk_size;
-                    if (next_start < storage.data() + storage.size()) {   // в любом случае смотрим на следующий 
+                    if (next_start < storage.data() + storage.size()) {
 
                         header.init(next_start);
                         
-                        if (header.cuse()) {                                    // следующий занят
-                            header.puse_0();                                    // для него предыдущий свободен
-                            header.copy(next_start);                            // (cur уже в списке или будет вставлен позже)
+                        if (header.cuse()) {                                    
+                            header.puse_0();                                    
+                            header.copy(next_start);                            
                         }
-                        else {                                                  // следующий свободен
+                        else {                                                  
                             
                             fchunk_t *next;
-                            std::memcpy(                                        // получаем следующий чанк
+                            std::memcpy(                                        
                                 &next, 
                                 next_start + header.size() - sizeof(fchunk_t*), 
                                 sizeof(fchunk_t*)
                             );
                             
-                            if (cur->prev == nullptr)                           // предыдущий занят, тогда
-                                fchunk_replace(next, cur);                      // переносим next в cur 
-                            else                                                // иначе    
-                                fchunk_cut(next);                               // вырезаем next
+                            if (cur->prev == nullptr)                           
+                                fchunk_replace(next, cur);                       
+                            else                                                
+                                fchunk_cut(next);                               
                                 
                             head = cur;
                             
-                            chunk_size+= header.size();                         // расширяем
-                            header.init(chunk_start);                           //
-                            header.size_set(chunk_size);                        // до следующего 
-                            header.copy(chunk_start);                           // чанка
+                            chunk_size+= header.size();                         
+                            header.init(chunk_start);                           
+                            header.size_set(chunk_size);                         
+                            header.copy(chunk_start);                           
                             
                             std::memcpy(
-                                chunk_start + chunk_size - sizeof(fchunk_t*),   // подготавливаем футер
+                                chunk_start + chunk_size - sizeof(fchunk_t*),   
                                 &cur, 
                                 sizeof(fchunk_t*)
                             );
                         }                        
                     }
-                    if (cur->prev == nullptr) {       // если соседи заняты
+                    if (cur->prev == nullptr) { 
                         
-                        if (head == nullptr) {        // есть ли свободные блоки, тогда
-                                                      // зацикливаем
+                        if (head == nullptr) { 
+
                             cur->next = cur;          
                             cur->prev = cur;
                         }
-                        else                          // иначе вставляем до
+                        else 
                             fchunk_before(head, cur);
                             
                         head = cur;
